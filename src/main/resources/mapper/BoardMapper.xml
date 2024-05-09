@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="stninfo.stn_board_backend.repository.board.BoardRepository">
+    <insert id="insertBoard" parameterType="stninfo.stn_board_backend.dto.Board" useGeneratedKeys="true"
+            keyProperty="idx" keyColumn="idx">
+        INSERT INTO stn_boards (title, writerId, pwd, email, isPrivate, isAlert, content, createAt)
+        VALUES (#{title}, #{writerId}, #{pwd}, #{email}, #{isPrivate}, #{isAlert}, #{content}, NOW());
+    </insert>
+
+    <select id="getAllBoard" resultType="stninfo.stn_board_backend.dto.Board">
+        SELECT idx,title, writerId, createAt
+        FROM stn_boards
+        order by idx desc;
+    </select>
+
+</mapper>
