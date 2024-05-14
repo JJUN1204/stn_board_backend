@@ -43,6 +43,13 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public String getEmail(Integer idx) {
+        return boardRepository.getEmail(idx);
+    }
+
+
+
+    @Override
     public List<Board> getAllBoard() {
 //        try {
 //            System.out.println("성공");

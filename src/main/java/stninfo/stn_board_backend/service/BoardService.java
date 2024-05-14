@@ -14,6 +14,8 @@ public interface BoardService {
 
     int Boardcount();
 
+    String getEmail(Integer idx);
+
     Board getBoardIdx(Integer idx);
 
 

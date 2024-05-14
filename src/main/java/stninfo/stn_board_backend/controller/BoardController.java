@@ -34,4 +34,18 @@ public class BoardController {
         return ResponseEntity.ok(boardService.insertBoard(board));
     }
 
+    @GetMapping("/getBoardCount")
+    public ResponseEntity<Integer> getBoardIdx(){
+        return ResponseEntity.ok(boardService.Boardcount());
+    }
+
+
+    @GetMapping("/getEmail")
+    public ResponseEntity<String> getEmail(Integer idx){
+        return ResponseEntity.ok(boardService.getEmail(idx));
+    }
+
+
+
+
 }

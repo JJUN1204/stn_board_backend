@@ -29,9 +29,21 @@
     </select>
 
     <select id="getBoardIdx" resultType="stninfo.stn_board_backend.dto.Board">
-        SELECT idx, title, writerId, pwd, email, content,createAt
+        SELECT idx, title, writerId, pwd, email, content, createAt
         FROM stn_boards
         WHERE idx = #{idx};
     </select>
+
+
+    <select id="getEmail" resultType="String">
+        SELECT email
+        FROM stn_boards
+        WHERE idx = #{idx};
+    </select>
+
+    <update id="updateBoard" parameterType="stninfo.stn_board_backend.dto.Board">
+        UPDATE stn_boards SET isPrivate = #{isPrivate}, isAlert = #{isAlert}, content = #{content}
+        WHERE idx = #{idx}
+    </update>
 
 </mapper>

@@ -12,10 +12,12 @@ public interface BoardRepository {
     List<Board> getAllBoard();
     int count();
 
+    String getEmail(Integer idx);
+
     List<Board> getBoardBy(int offset);
 
     Board getBoardIdx(Integer idx);
 
-
+    void upadateBoard(Integer isPrivate,Integer isAlert, String content);
 
 }
