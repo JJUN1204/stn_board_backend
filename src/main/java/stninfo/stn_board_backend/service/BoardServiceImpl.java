@@ -11,8 +11,18 @@ import java.util.List;
 public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
 
+    @Override
+    public List<Board> getBoardBy(int currentPage) {
+        return boardRepository.getBoardBy((currentPage - 1) * 5);
+    }
+
     public BoardServiceImpl(BoardRepository boardRepository) {
         this.boardRepository = boardRepository;
+    }
+
+    @Override
+    public Board getBoardIdx(Integer idx) {
+        return boardRepository.getBoardIdx(idx);
     }
 
     @Override
@@ -25,6 +35,11 @@ public class BoardServiceImpl implements BoardService {
             System.out.println("실패: " + e.getMessage()); // Exception의 메시지를 출력
             return new Result("error");
         }
+    }
+
+    @Override
+    public int Boardcount() {
+        return boardRepository.count();
     }
 
     @Override

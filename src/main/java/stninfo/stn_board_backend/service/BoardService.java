@@ -10,4 +10,12 @@ public interface BoardService {
     Result insertBoard(Board board);
     List<Board> getAllBoard();
 
+    List<Board> getBoardBy(int currentPage);
+
+    int Boardcount();
+
+    Board getBoardIdx(Integer idx);
+
+
+
 }

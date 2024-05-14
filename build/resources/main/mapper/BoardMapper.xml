@@ -16,4 +16,22 @@
         order by idx desc;
     </select>
 
+    <select id="getBoardBy" resultType="stninfo.stn_board_backend.dto.Board">
+        SELECT idx,title, writerId, createAt
+        FROM stn_boards
+        order by idx desc
+            LIMIT 5 OFFSET #{offset};
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM stn_boards;
+    </select>
+
+    <select id="getBoardIdx" resultType="stninfo.stn_board_backend.dto.Board">
+        SELECT idx, title, writerId, pwd, email, content,createAt
+        FROM stn_boards
+        WHERE idx = #{idx};
+    </select>
+
 </mapper>

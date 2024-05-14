@@ -3,6 +3,7 @@ package stninfo.stn_board_backend.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import stninfo.stn_board_backend.dto.Board;
+import stninfo.stn_board_backend.etc.PageVO;
 import stninfo.stn_board_backend.etc.Result;
 import stninfo.stn_board_backend.service.BoardService;
 
@@ -19,10 +20,14 @@ public class BoardController {
     }
 
     @GetMapping("/getAllBoard")
-    public ResponseEntity<List<Board>> getAllBoard(){
-        return ResponseEntity.ok(boardService.getAllBoard());
+    public ResponseEntity<PageVO<Board>> getAllBoard(Integer currentPage){
+        return ResponseEntity.ok(new PageVO<Board>(boardService.Boardcount(), boardService.getBoardBy(currentPage)));
     }
 
+    @GetMapping("/getBoardIdx")
+    public ResponseEntity<Board> getBoardIdx(Integer idx){
+        return ResponseEntity.ok(boardService.getBoardIdx(idx));
+    }
 
     @PutMapping("/insertBoard")
     public ResponseEntity<Result> insertBoard(@RequestBody Board board){

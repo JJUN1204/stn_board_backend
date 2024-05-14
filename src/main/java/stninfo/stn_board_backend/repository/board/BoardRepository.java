@@ -10,6 +10,11 @@ public interface BoardRepository {
     void insertBoard(Board board);
 
     List<Board> getAllBoard();
+    int count();
+
+    List<Board> getBoardBy(int offset);
+
+    Board getBoardIdx(Integer idx);
 
 
 
