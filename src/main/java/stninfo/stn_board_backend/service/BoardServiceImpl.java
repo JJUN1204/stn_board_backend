@@ -12,6 +12,18 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
 
     @Override
+    public Result updateBoard(Board board) {
+        try {
+            boardRepository.updateBoard(board);
+            System.out.println("성공");
+            return new Result("UPDATE_COMPLETE");
+        } catch (Exception e) {
+            System.out.println("실패: " + e.getMessage()); // Exception의 메시지를 출력
+            return new Result("error");
+        }
+    }
+
+    @Override
     public List<Board> getBoardBy(int currentPage) {
         return boardRepository.getBoardBy((currentPage - 1) * 5);
     }

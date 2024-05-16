@@ -10,7 +10,7 @@ import stninfo.stn_board_backend.service.BoardService;
 import java.util.List;
 
 @RestController
-@CrossOrigin("*")
+@CrossOrigin
 public class BoardController {
     private final BoardService boardService;
 
@@ -32,6 +32,12 @@ public class BoardController {
     @PutMapping("/insertBoard")
     public ResponseEntity<Result> insertBoard(@RequestBody Board board){
         return ResponseEntity.ok(boardService.insertBoard(board));
+    }
+
+    @PutMapping("/updateBoard")
+    public ResponseEntity<Result> updateBoard(@RequestBody Board board){
+        System.out.println(board);
+        return ResponseEntity.ok(boardService.updateBoard(board));
     }
 
     @GetMapping("/getBoardCount")

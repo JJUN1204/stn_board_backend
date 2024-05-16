@@ -18,6 +18,6 @@ public interface BoardRepository {
 
     Board getBoardIdx(Integer idx);
 
-    void upadateBoard(Integer isPrivate,Integer isAlert, String content);
+    void updateBoard(Board board);
 
 }

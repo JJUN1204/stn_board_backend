@@ -18,6 +18,6 @@ public interface BoardService {
 
     Board getBoardIdx(Integer idx);
 
-
+    Result updateBoard(Board board);
 
 }
