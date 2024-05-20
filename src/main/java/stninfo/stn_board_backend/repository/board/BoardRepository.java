@@ -20,4 +20,5 @@ public interface BoardRepository {
 
     void updateBoard(Board board);
 
+    void deleteBoard(Integer idx);
 }

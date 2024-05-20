@@ -24,6 +24,18 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public Result deleteBoard(Integer idx) {
+        try {
+            boardRepository.deleteBoard(idx);
+            System.out.println("성공");
+            return new Result("DELETE_COMPLETE");
+        } catch (Exception e) {
+            System.out.println("실패: " + e.getMessage()); // Exception의 메시지를 출력
+            return new Result("error");
+        }
+    }
+
+    @Override
     public List<Board> getBoardBy(int currentPage) {
         return boardRepository.getBoardBy((currentPage - 1) * 5);
     }

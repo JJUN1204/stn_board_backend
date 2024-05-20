@@ -40,6 +40,11 @@ public class BoardController {
         return ResponseEntity.ok(boardService.updateBoard(board));
     }
 
+    @DeleteMapping("/deleteBoard")
+    public ResponseEntity<Result> deleteBoard(Integer idx){
+        return ResponseEntity.ok(boardService.deleteBoard(idx));
+    }
+
     @GetMapping("/getBoardCount")
     public ResponseEntity<Integer> getBoardIdx(){
         return ResponseEntity.ok(boardService.Boardcount());

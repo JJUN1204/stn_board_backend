@@ -20,4 +20,6 @@ public interface BoardService {
 
     Result updateBoard(Board board);
 
+    Result deleteBoard(Integer idx);
+
 }

@@ -47,4 +47,9 @@
         WHERE idx = #{idx};
     </update>
 
+    <delete id="deleteBoard" parameterType="stninfo.stn_board_backend.dto.Board">
+        DELETE FROM stn_boards
+        WHERE idx = #{idx};
+    </delete>
+
 </mapper>
