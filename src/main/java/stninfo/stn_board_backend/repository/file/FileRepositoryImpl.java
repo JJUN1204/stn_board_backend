@@ -12,11 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
 @Repository
 public class FileRepositoryImpl implements FileRepository {
 
-    private static final String PATH = "/home/stninfo/imgs";
+    private static final String PATH = "/Users/user/Downloads/fileTest/";
+
     @Override
     public List<String> save(MultipartFile[] files) throws IOException {
         List<String> fileNames = new ArrayList<>();
@@ -31,7 +31,11 @@ public class FileRepositoryImpl implements FileRepository {
 
     @Override
     public byte[] getFileByFileName(String fileName) throws IOException {
-        Path filePath = Paths.get(PATH+fileName);
+        Path filePath = Paths.get(PATH + fileName);
+
+        if (!Files.exists(filePath)) {
+            throw new IOException("File not found");
+        }
 
         return Files.readAllBytes(filePath);
     }

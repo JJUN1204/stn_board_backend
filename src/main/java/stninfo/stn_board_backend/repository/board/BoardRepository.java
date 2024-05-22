@@ -15,10 +15,12 @@ public interface BoardRepository {
     String getEmail(Integer idx);
 
     List<Board> getBoardBy(int offset);
-
     Board getBoardIdx(Integer idx);
 
     void updateBoard(Board board);
 
     void deleteBoard(Integer idx);
+    void saveFileName(int boardIdx, String fileName);
+    List<String> getAllFileNameByBoardIdx(int boardIdx);
+
 }

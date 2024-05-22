@@ -52,4 +52,15 @@
         WHERE idx = #{idx};
     </delete>
 
+    <insert id="saveFileName" parameterType="map">
+        INSERT INTO stn_board_files (boardIdx, fileName)
+        VALUES (#{boardIdx}, #{fileName});
+    </insert>
+
+    <select id="getAllFileNameByBoardIdx" parameterType="int" resultType="java.lang.String">
+        SELECT fileName
+        FROM stn_board_files
+        WHERE boardIdx = #{boardIdx}
+    </select>
+
 </mapper>

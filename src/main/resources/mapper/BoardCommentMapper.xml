@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="stninfo.stn_board_backend.repository.comment.CommentRepository">
+
+    <select id="getCommentByBoardIdx" parameterType="java.lang.Integer" resultType="stninfo.stn_board_backend.dto.Comment">
+        SELECT idx, boardIdx, comment, pwd, createAt
+        FROM stn_board_comment
+        WHERE boardIdx = #{boardIdx}
+        ORDER BY createAt DESC;
+    </select>
+
+
+    <delete id="deleteCommentByIdx" parameterType="java.lang.Integer">
+        DELETE FROM stn_board_comment
+        WHERE idx = #{idx};
+    </delete>
+
+
+    <insert id="insertComment" parameterType="stninfo.stn_board_backend.dto.Comment">
+        INSERT INTO stn_board_comment (boardIdx, comment, pwd, createAt)
+        VALUES (#{boardIdx}, #{comment}, #{pwd}, NOW());
+    </insert>
+
+</mapper>
