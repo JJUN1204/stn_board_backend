@@ -2,6 +2,7 @@ package stninfo.stn_board_backend.service.comment;
 
 import org.springframework.stereotype.Service;
 import stninfo.stn_board_backend.dto.Comment;
+import stninfo.stn_board_backend.dto.CommentVO;
 import stninfo.stn_board_backend.etc.Result;
 import stninfo.stn_board_backend.repository.comment.CommentRepository;
 
@@ -27,8 +28,24 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    public List<Comment> getCommnetByBoardIdx(Integer idx) {
-        return commentRepository.getCommnetByBoardIdx(idx);
+    public List<CommentVO> getCommentByBoardIdx(Integer idx) {
+        return commentRepository.getCommentByBoardIdx(idx);
+    }
+
+    @Override
+    public CommentVO getCommentByIdx(Integer idx) {
+        return commentRepository.getCommentByIdx(idx);
+    }
+
+    @Override
+    public Result updateComment(Integer idx, String comment) {
+        try {
+            commentRepository.updateComment(idx, comment);
+            return new Result("UPDATE_COMMENT_COMPLETE");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Result("error");
+        }
     }
 
     @Override

@@ -5,12 +5,24 @@
 
 <mapper namespace="stninfo.stn_board_backend.repository.comment.CommentRepository">
 
-    <select id="getCommentByBoardIdx" parameterType="java.lang.Integer" resultType="stninfo.stn_board_backend.dto.Comment">
-        SELECT idx, boardIdx, comment, pwd, createAt
+    <select id="getCommentByBoardIdx" parameterType="java.lang.Integer" resultType="stninfo.stn_board_backend.dto.CommentVO">
+        SELECT idx, boardIdx, comment, pwd, DATE_FORMAT(createAt, '%Y년%m월%d일 %H시%i분%S초') createAt
         FROM stn_board_comment
         WHERE boardIdx = #{boardIdx}
         ORDER BY createAt DESC;
     </select>
+
+    <select id="getCommentByIdx" parameterType="java.lang.Integer" resultType="stninfo.stn_board_backend.dto.CommentVO">
+        SELECT idx, boardIdx, comment, pwd, DATE_FORMAT(createAt, '%Y년%m월%d일 %H시%i분%S초') createAt
+        FROM stn_board_comment
+        WHERE idx = #{idx}
+        ORDER BY createAt DESC;
+    </select>
+
+    <update id="updateComment">
+        update stn_board_comment set comment = #{comment} where idx = #{idx}
+    </update>
+
 
 
     <delete id="deleteCommentByIdx" parameterType="java.lang.Integer">
@@ -23,5 +35,9 @@
         INSERT INTO stn_board_comment (boardIdx, comment, pwd, createAt)
         VALUES (#{boardIdx}, #{comment}, #{pwd}, NOW());
     </insert>
+
+    <select id="getPasswordByCommentIdx">
+        select pwd from stn_board_comment where idx = #{idx}
+    </select>
 
 </mapper>

@@ -15,12 +15,14 @@ import java.util.UUID;
 @Repository
 public class FileRepositoryImpl implements FileRepository {
 
-    private static final String PATH = "/Users/user/Downloads/fileTest/";
+    // 업로드할 때 저장되는 위치
+    private static final String PATH = "C:/Users/user/Downloads/fileTest/";
 
     @Override
     public List<String> save(MultipartFile[] files) throws IOException {
         List<String> fileNames = new ArrayList<>();
         for(MultipartFile file : files) {
+            // 파일 이름 중복 없게 UUID 추가
             String fileName = String.format("%s=%s", UUID.randomUUID().toString(), file.getOriginalFilename());
             fileNames.add(fileName);
             file.transferTo(new File(PATH + fileName));
@@ -32,11 +34,23 @@ public class FileRepositoryImpl implements FileRepository {
     @Override
     public byte[] getFileByFileName(String fileName) throws IOException {
         Path filePath = Paths.get(PATH + fileName);
-
-        if (!Files.exists(filePath)) {
-            throw new IOException("File not found");
-        }
-
+        // 바이트 단위로 읽음
         return Files.readAllBytes(filePath);
+    }
+
+    @Override
+    public boolean deleteFileByFileName(String fileName) throws IOException {
+        Path filePath = Paths.get(PATH + fileName);
+        return Files.deleteIfExists(filePath);
+    }
+
+    @Override
+    public List<String> updateFiles(MultipartFile[] newFiles, String[] oldFileNames) throws IOException {
+        // 기존 파일 삭제
+        for (String oldFileName : oldFileNames) {
+            deleteFileByFileName(oldFileName);
+        }
+        // 새 파일 저장
+        return save(newFiles);
     }
 }

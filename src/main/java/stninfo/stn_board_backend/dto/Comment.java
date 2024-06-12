@@ -8,16 +8,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
 public class Comment {
-    private Integer Idx;
+    private Integer idx;
     private Integer boardIdx;
     private String comment;
     private String pwd;
-    private LocalDateTime createAt;
+    private String createAt;
 
-    public Comment(Integer idx, Integer boardIdx, String comment, String pwd, LocalDateTime createAt) {
-        Idx = idx;
+    public Comment(Integer idx, Integer boardIdx, String comment, String pwd, String createAt) {
+        this.idx = idx;
         this.boardIdx = boardIdx;
         this.comment = comment;
         this.pwd = pwd;

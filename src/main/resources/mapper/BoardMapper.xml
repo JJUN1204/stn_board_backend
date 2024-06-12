@@ -6,34 +6,147 @@
 <mapper namespace="stninfo.stn_board_backend.repository.board.BoardRepository">
     <insert id="insertBoard" parameterType="stninfo.stn_board_backend.dto.Board" useGeneratedKeys="true"
             keyProperty="idx" keyColumn="idx">
-        INSERT INTO stn_boards (title, writerId, pwd, email, isPrivate, isAlert, content, createAt)
-        VALUES (#{title}, #{writerId}, #{pwd}, #{email}, #{isPrivate}, #{isAlert}, #{content}, NOW());
+        INSERT INTO stn_boards (title, writerId, pwd, email, isPrivate, isAlert, content, createAt, replyIdx, view)
+        VALUES (#{title}, #{writerId}, #{pwd}, #{email}, #{isPrivate}, #{isAlert}, #{content}, NOW(), #{replyIdx}, 0);
     </insert>
 
-    <select id="getAllBoard" resultType="stninfo.stn_board_backend.dto.Board">
-        SELECT idx,title, writerId, createAt
-        FROM stn_boards
-        order by idx desc;
+    <select id="getBoardBy" resultType="stninfo.stn_board_backend.dto.BoardVO">
+        SELECT
+        sb.idx,
+        sb.title,
+        sb.writerId,
+        sb.email,
+        sb.content,
+        sb.isAlert,
+        sb.isPrivate,
+        DATE_FORMAT(sb.createAt, '%Y-%m-%d') createAt,
+        COUNT(DISTINCT sbf.idx) AS fileCount,
+        COUNT(DISTINCT sbc.idx) AS commentCount
+        , sb.replyIdx
+        , sb.view
+        FROM
+        stn_boards sb
+        LEFT JOIN stn_board_files sbf ON sb.idx = sbf.boardIdx
+        LEFT JOIN stn_board_comment sbc ON sb.idx = sbc.boardIdx
+        WHERE sb.isAlert = 0
+        <if test="searchType == 'TITLE'">
+            AND sb.title like CONCAT('%', #{searchInput}, '%')
+        </if>
+        <if test="searchType == 'TITLEANDCONTENT'">
+            AND (sb.title like CONCAT('%', #{searchInput}, '%')
+            OR sb.content like CONCAT('%', #{searchInput}, '%'))
+        </if>
+        <if test="searchType == 'WRITER'">
+            AND sb.writerId like CONCAT('%', #{searchInput}, '%')
+        </if>
+        <if test="startDate != null and endDate != null">
+            AND sb.createAt between #{startDate} and #{endDate}
+        </if>
+        GROUP BY
+        sb.idx,
+        sb.title,
+        sb.writerId,
+        sb.createAt
+        ORDER BY
+        sb.idx DESC
+        LIMIT 5 OFFSET #{offset};
     </select>
 
-    <select id="getBoardBy" resultType="stninfo.stn_board_backend.dto.Board">
-        SELECT idx,title, writerId, createAt
-        FROM stn_boards
-        order by idx desc
-            LIMIT 5 OFFSET #{offset};
+
+    <select id="getPasswordByBoardIdx">
+        select pwd from stn_boards where idx = #{boardIdx}
     </select>
 
-    <select id="count" resultType="int">
-        SELECT COUNT(*)
-        FROM stn_boards;
+    <select id="getAlert" resultType="stninfo.stn_board_backend.dto.BoardVO">
+        SELECT
+            sb.idx,
+            sb.title,
+            sb.writerId,
+            sb.email,
+            sb.content,
+            sb.isAlert,
+            sb.isPrivate,
+            DATE_FORMAT(sb.createAt, '%Y-%m-%d') as createAt,
+            COUNT(DISTINCT sbf.idx) AS fileCount,
+            COUNT(DISTINCT sbc.idx) AS commentCount
+            , sb.replyIdx
+            ,sb.view
+        FROM
+            stn_boards sb
+                LEFT JOIN stn_board_files sbf ON sb.idx = sbf.boardIdx
+                LEFT JOIN stn_board_comment sbc ON sb.idx = sbc.boardIdx
+        WHERE sb.isAlert = 1
+        GROUP BY
+            sb.idx,
+            sb.title,
+            sb.writerId,
+            sb.createAt
+        ORDER BY
+            sb.idx DESC;
     </select>
 
-    <select id="getBoardIdx" resultType="stninfo.stn_board_backend.dto.Board">
-        SELECT *
+    <select id="count" resultType="Integer">
+        SELECT
+        count(sb.idx)
+        FROM stn_boards sb
+        WHERE sb.isAlert = 0
+
+        <if test="searchType == 'TITLE'">
+            AND sb.title like CONCAT('%', #{searchInput}, '%')
+        </if>
+        <if test="searchType == 'TITLEANDCONTENT'">
+            AND (sb.title like CONCAT('%', #{searchInput}, '%')
+            OR sb.content like CONCAT('%', #{searchInput}, '%'))
+        </if>
+        <if test="searchType == 'WRITER'">
+            AND sb.writerId like CONCAT('%', #{searchInput}, '%')
+        </if>
+        <if test="startDate != null and endDate != null">
+            AND sb.createAt between #{startDate} and #{endDate}
+        </if>
+    </select>
+
+    <select id="getBoardIdx" resultType="stninfo.stn_board_backend.dto.BoardVO">
+        SELECT
+            idx,
+            title,
+            writerId,
+            email,
+            content,
+            isAlert,
+            isPrivate,
+            DATE_FORMAT(createAt, '%Y-%m-%d') createAt,
+            0,
+            0,
+            replyIdx,
+            view
         FROM stn_boards
         WHERE idx = #{idx};
     </select>
 
+    <select id="getReplyByIdx" resultType="stninfo.stn_board_backend.dto.BoardVO">
+        SELECT
+            idx,
+            title,
+            writerId,
+            email,
+            content,
+            isAlert,
+            isPrivate,
+            DATE_FORMAT(createAt, '%Y-%m-%d') createAt,
+            0,
+            0,
+            replyIdx,
+            view
+        FROM stn_boards
+        WHERE replyIdx = #{idx};
+    </select>
+
+    <update id="updateViewCount" parameterType="Integer">
+        UPDATE stn_boards
+        SET view = view + 1
+        WHERE idx = #{idx}
+    </update>
 
     <select id="getEmail" resultType="String">
         SELECT email
@@ -62,5 +175,8 @@
         FROM stn_board_files
         WHERE boardIdx = #{boardIdx}
     </select>
+
+
+
 
 </mapper>
