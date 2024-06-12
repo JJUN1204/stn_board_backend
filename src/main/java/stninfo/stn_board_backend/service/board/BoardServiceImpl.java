@@ -24,15 +24,7 @@ public class BoardServiceImpl implements BoardService {
         this.commentRepository = commentRepository;
     }
 
-    @Override
-    public Result updateBoard(Board board) {
-        try {
-            boardRepository.updateBoard(board);
-            return new Result("UPDATE_COMPLETE");
-        } catch (Exception e) {
-            return new Result("error");
-        }
-    }
+
 
     @Override
     public Result deleteBoard(Integer idx) {
@@ -90,6 +82,23 @@ public class BoardServiceImpl implements BoardService {
     public Result insertBoard(Board board) {
         try {
             boardRepository.insertBoard(board);
+            if(board.getFiles() != null) {
+                List<String> fileNames = fileRepository.save(board.getFiles());
+
+                for (String fileName : fileNames) {
+                    boardRepository.saveFileName(board.getIdx(),fileName);
+                }
+            }
+            return new Result("UPDATE_COMPLETE");
+        } catch (Exception e) {
+            return new Result("error");
+        }
+    }
+
+    @Override
+    public Result updateBoard(Board board) {
+        try {
+            boardRepository.updateBoard(board);
             if(board.getFiles() != null) {
                 List<String> fileNames = fileRepository.save(board.getFiles());
 
