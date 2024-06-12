@@ -71,8 +71,8 @@ public class BoardController {
 
     @PutMapping("/updateBoard")
     public ResponseEntity<Result> updateBoard(
-            @RequestPart("board") Board board,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+            @RequestPart Board board
+            ) {
 
         return ResponseEntity.ok(boardService.updateBoard(board));
     }
