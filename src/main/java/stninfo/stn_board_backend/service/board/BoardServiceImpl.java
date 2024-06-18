@@ -8,7 +8,6 @@ import stninfo.stn_board_backend.etc.Result;
 import stninfo.stn_board_backend.repository.board.BoardRepository;
 import stninfo.stn_board_backend.repository.comment.CommentRepository;
 import stninfo.stn_board_backend.repository.file.FileRepository;
-import stninfo.stn_board_backend.service.board.BoardService;
 
 import java.util.List;
 
@@ -24,8 +23,6 @@ public class BoardServiceImpl implements BoardService {
         this.commentRepository = commentRepository;
     }
 
-
-
     @Override
     public Result deleteBoard(Integer idx) {
         try {
@@ -38,28 +35,20 @@ public class BoardServiceImpl implements BoardService {
         }
     }
 
-
-
     @Override
     public List<String> getAllFileNameByBoardIdx(int boardIdx) {
         return boardRepository.getAllFileNameByBoardIdx(boardIdx);
     }
 
-
-
     @Override
-    public List<BoardVO> getBoardBy(Integer currentPage , String searchType
-            , String searchInput
-            , String startDate
-            , String endDate) {
-        return boardRepository.getBoardBy (
-             (currentPage - 1) * 5,
-                    searchType,
-                    searchInput,
-                    startDate != null ? startDate + " 00:00:00" : null,
-                    endDate != null ? endDate + " 23:59:59" : null
+    public List<BoardVO> getBoardBy(Integer currentPage, String searchType, String searchInput, String startDate, String endDate) {
+        return boardRepository.getBoardBy(
+                (currentPage - 1) * 5,
+                searchType,
+                searchInput,
+                startDate != null ? startDate + " 00:00:00" : null,
+                endDate != null ? endDate + " 23:59:59" : null
         );
-
     }
 
     @Override
@@ -82,15 +71,15 @@ public class BoardServiceImpl implements BoardService {
     public Result insertBoard(Board board) {
         try {
             boardRepository.insertBoard(board);
-            if(board.getFiles() != null) {
+            if (board.getFiles() != null) {
                 List<String> fileNames = fileRepository.save(board.getFiles());
-
                 for (String fileName : fileNames) {
-                    boardRepository.saveFileName(board.getIdx(),fileName);
+                    boardRepository.saveFileName(board.getIdx(), fileName);
                 }
             }
-            return new Result("UPDATE_COMPLETE");
+            return new Result("INSERT_COMPLETE");
         } catch (Exception e) {
+            e.printStackTrace();
             return new Result("error");
         }
     }
@@ -99,11 +88,10 @@ public class BoardServiceImpl implements BoardService {
     public Result updateBoard(Board board) {
         try {
             boardRepository.updateBoard(board);
-            if(board.getFiles() != null) {
+            if (board.getFiles() != null) {
                 List<String> fileNames = fileRepository.save(board.getFiles());
-
                 for (String fileName : fileNames) {
-                    boardRepository.saveFileName(board.getIdx(),fileName);
+                    boardRepository.saveFileName(board.getIdx(), fileName);
                 }
             }
             return new Result("UPDATE_COMPLETE");
@@ -112,13 +100,10 @@ public class BoardServiceImpl implements BoardService {
         }
     }
 
-
-
     @Override
     public String getEmail(Integer idx) {
         return boardRepository.getEmail(idx);
     }
-
 
     @Override
     public List<BoardVO> getAlert() {

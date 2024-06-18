@@ -10,7 +10,10 @@
         VALUES (#{title}, #{writerId}, #{pwd}, #{email}, #{isPrivate}, #{isAlert}, #{content}, NOW(), #{replyIdx}, 0);
     </insert>
 
+
     <select id="getBoardBy" resultType="stninfo.stn_board_backend.dto.BoardVO">
+        WITH RECURSIVE BoardHierarchy AS (
+        -- 루트 게시글 선택
         SELECT
         sb.idx,
         sb.title,
@@ -19,38 +22,139 @@
         sb.content,
         sb.isAlert,
         sb.isPrivate,
-        DATE_FORMAT(sb.createAt, '%Y-%m-%d') createAt,
-        COUNT(DISTINCT sbf.idx) AS fileCount,
-        COUNT(DISTINCT sbc.idx) AS commentCount
-        , sb.replyIdx
-        , sb.view
+        DATE_FORMAT(sb.createAt, '%Y-%m-%d') AS createAt, -- 날짜 포맷 지정
+        sb.replyIdx,
+        sb.`view`,
+        CONCAT(CAST(sb.createAt AS CHAR), '|', CAST(sb.idx AS CHAR)) AS x, -- createAt과 idx를 조합하여 고유 키 x 생성
+        1 AS depth -- 루트 게시글의 깊이는 1
         FROM
         stn_boards sb
-        LEFT JOIN stn_board_files sbf ON sb.idx = sbf.boardIdx
-        LEFT JOIN stn_board_comment sbc ON sb.idx = sbc.boardIdx
-        WHERE sb.isAlert = 0
-        <if test="searchType == 'TITLE'">
-            AND sb.title like CONCAT('%', #{searchInput}, '%')
+        WHERE
+        sb.replyIdx IS NULL -- 답글이 없는 게시글만 선택
+        AND sb.isAlert = 0 -- isAlert가 0인 게시글만 선택
+
+        <!-- 제목 검색 조건 -->
+        <if test='"TITLE".equals(searchType)'>
+            AND sb.title LIKE CONCAT('%', #{searchInput}, '%')
         </if>
-        <if test="searchType == 'TITLEANDCONTENT'">
-            AND (sb.title like CONCAT('%', #{searchInput}, '%')
-            OR sb.content like CONCAT('%', #{searchInput}, '%'))
+        <!-- 제목과 내용 검색 조건 -->
+        <if test='"TITLEANDCONTENT".equals(searchType)'>
+            AND (sb.title LIKE CONCAT('%', #{searchInput}, '%')
+            OR sb.content LIKE CONCAT('%', #{searchInput}, '%'))
         </if>
-        <if test="searchType == 'WRITER'">
-            AND sb.writerId like CONCAT('%', #{searchInput}, '%')
+        <!-- 작성자 검색 조건 -->
+        <if test='"WRITER".equals(searchType)'>
+            AND sb.writerId LIKE CONCAT('%', #{searchInput}, '%')
         </if>
-        <if test="startDate != null and endDate != null">
-            AND sb.createAt between #{startDate} and #{endDate}
+        <!-- 날짜 범위 검색 조건 -->
+        <if test='startDate != null and endDate != null'>
+            AND sb.createAt BETWEEN #{startDate} AND #{endDate}
         </if>
-        GROUP BY
+
+        UNION ALL
+
+        -- 답글 선택
+        SELECT
         sb.idx,
         sb.title,
         sb.writerId,
-        sb.createAt
+        sb.email,
+        sb.content,
+        sb.isAlert,
+        sb.isPrivate,
+        DATE_FORMAT(sb.createAt, '%Y-%m-%d') AS createAt, -- 날짜 포맷 지정
+        sb.replyIdx,
+        sb.view,
+        CONCAT(bh.x, '-', CAST(sb.idx AS CHAR)) AS x, -- 이전 x 값에 현재 idx를 추가하여 고유 키 x 업데이트
+        bh.depth + 1 AS depth -- 이전 깊이에 1을 더하여 답글의 깊이를 설정
+        FROM
+        stn_boards sb
+        INNER JOIN BoardHierarchy bh ON sb.replyIdx = bh.idx -- 이전 게시글과 답글을 연결
+        )
+
+        <!-- 최종 데이터 선택 -->
+        SELECT
+        bh.idx AS idx,
+        bh.title AS title,
+        bh.writerId AS writerId,
+        bh.email AS email,
+        bh.content AS content,
+        bh.isAlert AS isAlert,
+        bh.isPrivate,
+        bh.createAt, -- 포맷 지정된 날짜
+        COUNT(DISTINCT bf.idx) AS fileCount, -- 첨부 파일 개수
+        COUNT(DISTINCT bc.idx) AS commentCount, -- 댓글 개수
+        bh.replyIdx,
+        bh.view AS `view`,
+        IF(DATE_FORMAT(bh.createAt, '%Y-%m-%d') = DATE_FORMAT(NOW(), '%Y-%m-%d'), 1, 0) AS isNewBoard, -- 오늘 작성된 게시글인지 여부
+        bh.depth, -- 게시글의 깊이
+        bh.x -- 고유 키 x
+        FROM
+        BoardHierarchy bh
+        LEFT JOIN stn_board_files bf ON bh.idx = bf.boardIdx -- 게시글에 첨부된 파일 조인
+        LEFT JOIN stn_board_comment bc ON bh.idx = bc.boardIdx -- 게시글에 달린 댓글 조인
+        GROUP BY
+        bh.idx,
+        bh.title,
+        bh.content,
+        bh.email,
+        bh.writerId,
+        bh.createAt,
+        bh.isAlert,
+        bh.isPrivate,
+        bh.view,
+        bh.depth,
+        bh.replyIdx,
+        bh.x
         ORDER BY
-        sb.idx DESC
-        LIMIT 5 OFFSET #{offset};
+        SUBSTRING_INDEX(bh.x, '|', 1) DESC, -- x의 첫 번째 파트를 기준으로 내림차순 정렬 (최상위 게시글부터)
+        SUBSTRING_INDEX(bh.x, '|', -1) ASC -- x의 마지막 파트를 기준으로 오름차순 정렬 (같은 깊이 내에서 순서 정렬)
+        LIMIT 5 OFFSET #{offset}; -- 페이지네이션을 위한 LIMIT 및 OFFSET 설정
+
     </select>
+
+
+    <!--    <select id="getBoardBy" resultType="stninfo.stn_board_backend.dto.BoardVO">-->
+<!--        SELECT-->
+<!--        sb.idx,-->
+<!--        sb.title,-->
+<!--        sb.writerId,-->
+<!--        sb.email,-->
+<!--        sb.content,-->
+<!--        sb.isAlert,-->
+<!--        sb.isPrivate,-->
+<!--        DATE_FORMAT(sb.createAt, '%Y-%m-%d') createAt,-->
+<!--        COUNT(DISTINCT sbf.idx) AS fileCount,-->
+<!--        COUNT(DISTINCT sbc.idx) AS commentCount-->
+<!--        , sb.replyIdx-->
+<!--        , sb.view-->
+<!--        FROM-->
+<!--        stn_boards sb-->
+<!--        LEFT JOIN stn_board_files sbf ON sb.idx = sbf.boardIdx-->
+<!--        LEFT JOIN stn_board_comment sbc ON sb.idx = sbc.boardIdx-->
+<!--        WHERE sb.isAlert = 0-->
+<!--        <if test="searchType == 'TITLE'">-->
+<!--            AND sb.title like CONCAT('%', #{searchInput}, '%')-->
+<!--        </if>-->
+<!--        <if test="searchType == 'TITLEANDCONTENT'">-->
+<!--            AND (sb.title like CONCAT('%', #{searchInput}, '%')-->
+<!--            OR sb.content like CONCAT('%', #{searchInput}, '%'))-->
+<!--        </if>-->
+<!--        <if test="searchType == 'WRITER'">-->
+<!--            AND sb.writerId like CONCAT('%', #{searchInput}, '%')-->
+<!--        </if>-->
+<!--        <if test="startDate != null and endDate != null">-->
+<!--            AND sb.createAt between #{startDate} and #{endDate}-->
+<!--        </if>-->
+<!--        GROUP BY-->
+<!--        sb.idx,-->
+<!--        sb.title,-->
+<!--        sb.writerId,-->
+<!--        sb.createAt-->
+<!--        ORDER BY-->
+<!--        sb.idx DESC-->
+<!--        LIMIT 5 OFFSET #{offset};-->
+<!--    </select>-->
 
 
     <select id="getPasswordByBoardIdx">

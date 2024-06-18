@@ -71,11 +71,20 @@ public class BoardController {
 
     @PutMapping("/updateBoard")
     public ResponseEntity<Result> updateBoard(
-            @RequestPart Board board
-            ) {
+            @RequestParam("idx") int idx,
+            @RequestParam("title") String title,
+            @RequestParam("writerId") String writerId,
+            @RequestParam("email") String email,
+            @RequestParam("isPrivate") int isPrivate,
+            @RequestParam("isAlert") int isAlert,
+            @RequestParam("content") String content,
+            @RequestParam(value = "files", required = false) MultipartFile[] files) {
 
+        Board board = new Board(idx, title, writerId,null, email, isAlert, isPrivate,content, files, null);
         return ResponseEntity.ok(boardService.updateBoard(board));
     }
+
+
 
     @PutMapping("/updateComment")
     public ResponseEntity<Result> updateComment(@RequestParam Integer idx, @RequestParam String comment, @RequestParam String pwd) {
@@ -97,13 +106,40 @@ public class BoardController {
         return ResponseEntity.ok(commentService.deleteCommentByIdx(idx));
     }
 
-    @PostMapping("/checkPassword")
-    public ResponseEntity<Boolean> checkPassword(@RequestParam(required = false) Integer idx, @RequestParam(required = false) Integer boardIdx, @RequestParam String password) {
-        String targetPassword = idx != null ?
-                commentRepository.getPasswordByCommentIdx(idx)
-                : boardRepository.getPasswordByBoardIdx(boardIdx);
+    @PostMapping("/processAction")
+    public ResponseEntity<Result> processAction(@RequestParam String action,
+                                                @RequestParam String password,
+                                                @RequestParam Integer boardIdx,
+                                                @RequestParam(required = false) Integer commentIdx) {
+        String targetPassword = commentIdx != null ?
+                commentRepository.getPasswordByCommentIdx(commentIdx) :
+                boardRepository.getPasswordByBoardIdx(boardIdx);
 
-        return ResponseEntity.ok(password.equals(targetPassword));
+        if (!password.equals(targetPassword)) {
+            return ResponseEntity.ok(new Result("PASSWORDERROR"));
+        }
+
+        switch (action) {
+            case "private":
+                return ResponseEntity.ok(new Result("PRIVATE_ACCESS"));
+
+            case "file":
+                return ResponseEntity.ok(new Result("FILE_ACCESS"));
+
+            case "update":
+                return ResponseEntity.ok(new Result("UPDATE_ACCESS"));
+
+            case "delete":
+                Result deleteResult = boardService.deleteBoard(boardIdx);
+                return ResponseEntity.ok(deleteResult);
+
+            case "deleteComment":
+                Result deleteCommentResult = commentService.deleteCommentByIdx(commentIdx);
+                return ResponseEntity.ok(deleteCommentResult);
+
+            default:
+                return ResponseEntity.ok(new Result("오류"));
+        }
     }
 
     @GetMapping("/getEmail")
